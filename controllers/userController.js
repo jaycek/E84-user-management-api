@@ -154,10 +154,16 @@ const login = async(req,res,next)=>{
         }
         const token = generateToken(payload)
        
-        res.cookie('token',token,{
-            httpOnly:true,
-            secure:false
-        })
+        // res.cookie('token',token,{
+        //     httpOnly:true,
+        //     secure:false
+        // })
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 24 * 60 * 60 * 1000
+            });
         res.status(200).json({message:"Login successful"})
     }
     catch(error){
@@ -170,6 +176,17 @@ const checkUser = async(req,res)=>{
     return res.status(200).json({message:"User validated"})
 }
 
+const logout = async(req,res)=>{
+     res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+  });
+
+  return res.status(200).json({ success: true, message: "Logged out successfully" });
+}
+
 module.exports = {
     getUsers,
     createUser,
@@ -177,5 +194,6 @@ module.exports = {
     updateUser,
     deleteUser,
     login,
-    checkUser
+    checkUser,
+    logout
 }
